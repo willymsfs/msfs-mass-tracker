@@ -1,3 +1,24 @@
+// At the top of script.js
+import db from './db.js';
+
+// Update the initApp function
+async function initApp() {
+    try {
+        // Initialize database
+        await db.init();
+        
+        // Set up navigation
+        setupNavigation();
+        
+        // Initialize dashboard
+        await initDashboard();
+        
+        // ... rest of your initialization code
+    } catch (error) {
+        console.error('Initialization failed:', error);
+        alert('Failed to initialize the application. Please try refreshing the page.');
+    }
+}
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the application
     initApp();
