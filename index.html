@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSFS Mass Tracking Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-blue-800">MSFS Mass Tracking Tool</h1>
+            <p class="text-gray-600">For Missionaries of St. Francis de Sales (Constitution Rule 118)</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Navigation Sidebar -->
+            <div class="lg:col-span-1 bg-white p-4 rounded-lg shadow">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-4 text-blue-700">Navigation</h2>
+                    <ul class="space-y-2">
+                        <li><button id="nav-dashboard" class="nav-btn w-full text-left px-3 py-2 rounded bg-blue-100 text-blue-800 font-medium"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</button></li>
+                        <li><button id="nav-mass-entry" class="nav-btn w-full text-left px-3 py-2 rounded hover:bg-gray-100"><i class="fas fa-calendar-plus mr-2"></i>Mass Entry</button></li>
+                        <li><button id="nav-personal-intentions" class="nav-btn w-full text-left px-3 py-2 rounded hover:bg-gray-100"><i class="fas fa-user mr-2"></i>Personal Intentions</button></li>
+                        <li><button id="nav-suffrages" class="nav-btn w-full text-left px-3 py-2 rounded hover:bg-gray-100"><i class="fas fa-cross mr-2"></i>Deceased Suffrages</button></li>
+                        <li><button id="nav-mass-receptions" class="nav-btn w-full text-left px-3 py-2 rounded hover:bg-gray-100"><i class="fas fa-box-open mr-2"></i>Mass Receptions</button></li>
+                        <li><button id="nav-reports" class="nav-btn w-full text-left px-3 py-2 rounded hover:bg-gray-100"><i class="fas fa-file-alt mr-2"></i>Reports</button></li>
+                        <li><button id="nav-settings" class="nav-btn w-full text-left px-3 py-2 rounded hover:bg-gray-100"><i class="fas fa-cog mr-2"></i>Settings</button></li>
+                    </ul>
+                </div>
+                
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-4 text-blue-700">Quick Actions</h2>
+                    <button id="quick-add-mass" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded mb-2">
+                        <i class="fas fa-plus mr-2"></i>Add Today's Mass
+                    </button>
+                    <button id="quick-view-report" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
+                        <i class="fas fa-file-pdf mr-2"></i>Generate Monthly Report
+                    </button>
+                </div>
+                
+                <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <h3 class="font-medium text-yellow-800 mb-2"><i class="fas fa-exclamation-circle mr-2"></i>Reminders</h3>
+                    <div id="reminders-container" class="text-sm text-yellow-700">
+                        <!-- Reminders will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="lg:col-span-3">
+                <!-- Dashboard View (default) -->
+                <div id="dashboard-view" class="view-content bg-white p-6 rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-blue-800">Dashboard Overview</h2>
+                        <div class="flex space-x-2">
+                            <select id="dashboard-year" class="border rounded px-3 py-1">
+                                <!-- Years will be populated by JS -->
+                            </select>
+                            <select id="dashboard-month" class="border rounded px-3 py-1">
+                                <option value="all">All Months</option>
+                                <!-- Months will be populated by JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h3 class="text-sm font-medium text-blue-800">Total Masses Celebrated</h3>
+                            <p id="stat-celebrated" class="text-2xl font-bold text-blue-600">0</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h3 class="text-sm font-medium text-green-800">Current Serial Number</h3>
+                            <p id="stat-serial" class="text-2xl font-bold text-green-600">0</p>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                            <h3 class="text-sm font-medium text-red-800">Masses Missed</h3>
+                            <p id="stat-missed" class="text-2xl font-bold text-red-600">0</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h3 class="text-sm font-medium text-purple-800">Personal Intentions</h3>
+                            <p id="stat-personal" class="text-2xl font-bold text-purple-600">0/3</p>
+                        </div>
+                    </div>
+
+                    <!-- Calendar View -->
+                    <div class="mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-700">Monthly Calendar</h3>
+                            <div class="flex space-x-2">
+                                <button id="prev-month" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200"><i class="fas fa-chevron-left"></i></button>
+                                <span id="current-month-year" class="px-4 py-1 font-medium">January 2023</span>
+                                <button id="next-month" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div id="calendar-container" class="bg-white border rounded-lg overflow-hidden">
+                            <!-- Calendar will be generated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Masses -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Recent Masses</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="py-2 px-4 border">Date</th>
+                                        <th class="py-2 px-4 border">Serial No.</th>
+                                        <th class="py-2 px-4 border">Intention</th>
+                                        <th class="py-2 px-4 border">From Whom</th>
+                                        <th class="py-2 px-4 border">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-masses-table">
+                                    <!-- Recent masses will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mass Entry View -->
+                <div id="mass-entry-view" class="view-content hidden bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-2xl font-bold text-blue-800 mb-6">Mass Entry</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Mass Entry Form -->
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-700">Add/Edit Mass</h3>
+                            
+                            <form id="mass-entry-form" class="space-y-4">
+                                <div>
+                                    <label for="mass-date" class="block text-sm font-medium text-gray-700">Date</label>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <select id="mass-day" class="border rounded px-3 py-2" required>
+                                            <!-- Days will be populated by JS -->
+                                        </select>
+                                        <select id="mass-month" class="border rounded px-3 py-2" required>
+                                            <!-- Months will be populated by JS -->
+                                        </select>
+                                        <select id="mass-year" class="border rounded px-3 py-2" required>
+                                            <!-- Years will be populated by JS -->
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="mass-serial" class="block text-sm font-medium text-gray-700">Serial Number</label>
+                                    <input type="number" id="mass-serial" class="w-full border rounded px-3 py-2" readonly>
+                                </div>
+                                
+                                <div>
+                                    <label for="mass-receipt-date" class="block text-sm font-medium text-gray-700">Date of Receipt</label>
+                                    <input type="date" id="mass-receipt-date" class="w-full border rounded px-3 py-2">
+                                </div>
+                                
+                                <div>
+                                    <label for="mass-from" class="block text-sm font-medium text-gray-700">From Whom</label>
+                                    <input type="text" id="mass-from" class="w-full border rounded px-3 py-2" placeholder="e.g., NGP Province, Generalate">
+                                </div>
+                                
+                                <div>
+                                    <label for="mass-purpose" class="block text-sm font-medium text-gray-700">Intention Purpose</label>
+                                    <textarea id="mass-purpose" class="w-full border rounded px-3 py-2" rows="2" placeholder="e.g., General suffrages, For family member"></textarea>
+                                </div>
+                                
+                                <div>
+                                    <label for="mass-remarks" class="block text-sm font-medium text-gray-700">Remarks</label>
+                                    <textarea id="mass-remarks" class="w-full border rounded px-3 py-2" rows="2" placeholder="e.g., Celebrated at parish church"></textarea>
+                                </div>
+                                
+                                <div class="flex space-x-4">
+                                    <div class="flex items-center">
+                                        <input type="radio" id="mass-status-celebrated" name="mass-status" value="celebrated" class="mr-2" checked>
+                                        <label for="mass-status-celebrated" class="text-sm font-medium text-gray-700">Celebrated</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="radio" id="mass-status-missed" name="mass-status" value="missed" class="mr-2">
+                                        <label for="mass-status-missed" class="text-sm font-medium text-gray-700">Missed</label>
+                                    </div>
+                                </div>
+                                
+                                <div id="missed-reason-container" class="hidden">
+                                    <label for="mass-missed-reason" class="block text-sm font-medium text-gray-700">Reason for Not Celebrating</label>
+                                    <select id="mass-missed-reason" class="w-full border rounded px-3 py-2">
+                                        <option value="illness">Illness</option>
+                                        <option value="travel">Travel</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex justify-end space-x-3 pt-4">
+                                    <button type="button" id="cancel-mass-entry" class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-100">Cancel</button>
+                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save Mass</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Calendar for Selection -->
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-700">Select Date</h3>
+                                <div class="flex space-x-2">
+                                    <button id="mass-entry-prev-month" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200"><i class="fas fa-chevron-left"></i></button>
+                                    <span id="mass-entry-current-month-year" class="px-4 py-1 font-medium">January 2023</span>
+                                    <button id="mass-entry-next-month" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            <div id="mass-entry-calendar" class="bg-white border rounded-lg overflow-hidden">
+                                <!-- Calendar will be generated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Intentions View -->
+                <div id="personal-intentions-view" class="view-content hidden bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-2xl font-bold text-blue-800 mb-6">Personal Intentions</h2>
+                    
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-700">Fixed Personal Intentions</h3>
+                            <div class="flex space-x-2">
+                                <select id="pi-year" class="border rounded px-3 py-1">
+                                    <!-- Years will be populated by JS -->
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 overflow-x-auto">
+                            <table class="min-w-full bg-white border">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="py-2 px-4 border">Date</th>
+                                        <th class="py-2 px-4 border">Occasion</th>
+                                        <th class="py-2 px-4 border">Status</th>
+                                        <th class="py-2 px-4 border">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fixed-intentions-table">
+                                    <!-- Fixed intentions will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-700">Random Personal Intentions</h3>
+                            <button id="generate-random-intentions" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+                                <i class="fas fa-random mr-2"></i>Generate Random Dates
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4 overflow-x-auto">
+                            <table class="min-w-full bg-white border">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="py-2 px-4 border">Month</th>
+                                        <th class="py-2 px-4 border">Date 1</th>
+                                        <th class="py-2 px-4 border">Date 2</th>
+                                        <th class="py-2 px-4 border">Date 3</th>
+                                        <th class="py-2 px-4 border">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="random-intentions-table">
+                                    <!-- Random intentions will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deceased Suffrages View -->
+                <div id="suffrages-view" class="view-content hidden bg-white p-6 rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-blue-800">Deceased Suffrages</h2>
+                        <button id="add-suffrage-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>Add Suffrage
+                        </button>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-700">Pending Suffrages</h3>
+                            <div class="flex space-x-2">
+                                <select id="suffrage-filter" class="border rounded px-3 py-1">
+                                    <option value="all">All</option>
+                                    <option value="pending">Pending Only</option>
+                                    <option value="completed">Completed Only</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="py-2 px-4 border">Date of Death</th>
+                                        <th class="py-2 px-4 border">Name</th>
+                                        <th class="py-2 px-4 border">When Celebrated</th>
+                                        <th class="py-2 px-4 border">Status</th>
+                                        <th class="py-2 px-4 border">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="suffrages-table">
+                                    <!-- Suffrages will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Suffrage Modal (hidden by default) -->
+                    <div id="suffrage-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-semibold">Add Deceased Confrere</h3>
+                                <button id="close-suffrage-modal" class="text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <form id="suffrage-form" class="space-y-4">
+                                <input type="hidden" id="suffrage-id">
+                                
+                                <div>
+                                    <label for="suffrage-name" class="block text-sm font-medium text-gray-700">Name</label>
+                                    <input type="text" id="suffrage-name" class="w-full border rounded px-3 py-2" required>
+                                </div>
+                                
+                                <div>
+                                    <label for="suffrage-death-date" class="block text-sm font-medium text-gray-700">Date of Death</label>
+                                    <input type="date" id="suffrage-death-date" class="w-full border rounded px-3 py-2" required>
+                                </div>
+                                
+                                <div>
+                                    <label for="suffrage-receipt-date" class="block text-sm font-medium text-gray-700">Date of Receipt of Notice</label>
+                                    <input type="date" id="suffrage-receipt-date" class="w-full border rounded px-3 py-2" required>
+                                </div>
+                                
+                                <div>
+                                    <label for="suffrage-celebrated-date" class="block text-sm font-medium text-gray-700">When Celebrated</label>
+                                    <input type="date" id="suffrage-celebrated-date" class="w-full border rounded px-3 py-2">
+                                </div>
+                                
+                                <div class="flex justify-end space-x-3 pt-4">
+                                    <button type="button" id="cancel-suffrage" class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-100">Cancel</button>
+                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mass Receptions View -->
+                <div id="mass-receptions-view" class="view-content hidden bg-white p-6 rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-blue-800">Mass Receptions</h2>
+                        <button id="add-reception-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>Add Reception
+                        </button>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-700">Bulk Intentions Received</h3>
+                            <div class="flex space-x-2">
+                                <select id="reception-year-filter" class="border rounded px-3 py-1">
+                                    <option value="all">All Years</option>
+                                    <!-- Years will be populated by JS -->
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="py-2 px-4 border">Date of Receipt</th>
+                                        <th class="py-2 px-4 border">From Whom</th>
+                                        <th class="py-2 px-4 border">Intention Purpose</th>
+                                        <th class="py-2 px-4 border">Amount</th>
+                                        <th class="py-2 px-4 border">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="receptions-table">
+                                    <!-- Receptions will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Reception Modal (hidden by default) -->
+                    <div id="reception-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-semibold">Add Mass Reception</h3>
+                                <button id="close-reception-modal" class="text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <form id="reception-form" class="space-y-4">
+                                <input type="hidden" id="reception-id">
+                                
+                                <div>
+                                    <label for="reception-date" class="block text-sm font-medium text-gray-700">Date of Receipt</label>
+                                    <input type="date" id="reception-date" class="w-full border rounded px-3 py-2" required>
+                                </div>
+                                
+                                <div>
+                                    <label for="reception-from" class="block text-sm font-medium text-gray-700">From Whom</label>
+                                    <input type="text" id="reception-from" class="w-full border rounded px-3 py-2" placeholder="e.g., NGP Province, Generalate" required>
+                                </div>
+                                
+                                <div>
+                                    <label for="reception-purpose" class="block text-sm font-medium text-gray-700">Intention Purpose</label>
+                                    <input type="text" id="reception-purpose" class="w-full border rounded px-3 py-2" placeholder="e.g., General suffrages, For family member">
+                                </div>
+                                
+                                <div>
+                                    <label for="reception-amount" class="block text-sm font-medium text-gray-700">Amount (Number of Intentions)</label>
+                                    <input type="number" id="reception-amount" class="w-full border rounded px-3 py-2" min="1" required>
+                                </div>
+                                
+                                <div class="flex justify-end space-x-3 pt-4">
+                                    <button type="button" id="cancel-reception" class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-100">Cancel</button>
+                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports View -->
+                <div id="reports-view" class="view-content hidden bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-2xl font-bold text-blue-800 mb-6">Reports</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white border rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-700">Monthly Report</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Select Month:</span>
+                                    <select id="report-month" class="border rounded px-2 py-1">
+                                        <!-- Months will be populated by JS -->
+                                    </select>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Select Year:</span>
+                                    <select id="report-year" class="border rounded px-2 py-1">
+                                        <!-- Years will be populated by JS -->
+                                    </select>
+                                </div>
+                                <button id="generate-monthly-report" class="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                    Generate Report
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white border rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-700">Yearly Summary</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Select Year:</span>
+                                    <select id="report-yearly-year" class="border rounded px-2 py-1">
+                                        <!-- Years will be populated by JS -->
+                                    </select>
+                                </div>
+                                <button id="generate-yearly-report" class="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                    Generate Summary
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white border rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-700">Export Data</h3>
+                            <div class="space-y-3">
+                                <button id="export-excel" class="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                                    <i class="fas fa-file-excel mr-2"></i>Export to Excel
+                                </button>
+                                <button id="export-pdf" class="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                                    <i class="fas fa-file-pdf mr-2"></i>Export to PDF
+                                </button>
+                                <button id="import-data" class="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+                                    <i class="fas fa-file-import mr-2"></i>Import Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Report Display Area -->
+                    <div id="report-display" class="bg-gray-50 border rounded-lg p-4 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 id="report-title" class="text-xl font-semibold"></h3>
+                            <button id="print-report" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                                <i class="fas fa-print mr-1"></i>Print
+                            </button>
+                        </div>
+                        <div id="report-content" class="overflow-x-auto">
+                            <!-- Report content will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
+                <div id="settings-view" class="view-content hidden bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-2xl font-bold text-blue-800 mb-6">Settings</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Personal Intentions Settings -->
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-700">Personal Intentions</h3>
+                            
+                            <div class="mb-4">
+                                <h4 class="font-medium text-gray-700 mb-2">Fixed Dates</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span>18 Jan - Gladwin Birthday</span>
+                                        <button class="text-red-500 hover:text-red-700">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Other fixed dates would be listed here -->
+                                </div>
+                            </div>
+                            
+                            <div class="border-t pt-4">
+                                <h4 class="font-medium text-gray-700 mb-2">Add New Fixed Date</h4>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <select id="new-fixed-day" class="border rounded px-2 py-1">
+                                        <!-- Days will be populated by JS -->
+                                    </select>
+                                    <select id="new-fixed-month" class="border rounded px-2 py-1">
+                                        <!-- Months will be populated by JS -->
+                                    </select>
+                                    <input type="text" id="new-fixed-occasion" class="border rounded px-2 py-1" placeholder="Occasion">
+                                </div>
+                                <button id="add-fixed-date" class="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                                    Add Date
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Liturgical Restrictions -->
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-700">Liturgical Restrictions</h3>
+                            
+                            <div class="mb-4">
+                                <h4 class="font-medium text-gray-700 mb-2">Good Friday Dates</h4>
+                                <ul class="list-disc list-inside text-sm text-gray-600">
+                                    <li>29 March 2024</li>
+                                    <li>18 April 2025</li>
+                                    <li>3 April 2026</li>
+                                    <!-- Other Good Friday dates would be listed here -->
+                                </ul>
+                            </div>
+                            
+                            <div class="border-t pt-4">
+                                <h4 class="font-medium text-gray-700 mb-2">Special Days</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span>24 Jan - SFS Feast Day</span>
+                                        <span class="text-sm text-gray-500">Auto-marked</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Data Management -->
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 md:col-span-2">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-700">Data Management</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h4 class="font-medium text-gray-700 mb-2">Backup Data</h4>
+                                    <button id="backup-data" class="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                                        <i class="fas fa-save mr-2"></i>Create Backup
+                                    </button>
+                                    <p class="text-xs text-gray-500 mt-1">Creates a downloadable backup file</p>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-medium text-gray-700 mb-2">Restore Data</h4>
+                                    <input type="file" id="restore-file" class="hidden" accept=".json">
+                                    <button id="restore-data" class="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                        <i class="fas fa-upload mr-2"></i>Restore from Backup
+                                    </button>
+                                    <p class="text-xs text-gray-500 mt-1">Restores from a previously saved backup</p>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-medium text-gray-700 mb-2">Reset Data</h4>
+                                    <button id="reset-data" class="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                                        <i class="fas fa-trash mr-2"></i>Reset All Data
+                                    </button>
+                                    <p class="text-xs text-gray-500 mt-1">Warning: This will delete all your data</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Data Modal -->
+    <div id="import-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Import Data</h3>
+                <button id="close-import-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select File</label>
+                    <input type="file" id="import-file" class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700
+                        hover:file:bg-blue-100" accept=".xlsx,.xls,.csv">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Import Type</label>
+                    <select id="import-type" class="w-full border rounded px-3 py-2">
+                        <option value="masses">Masses</option>
+                        <option value="suffrages">Deceased Suffrages</option>
+                        <option value="receptions">Mass Receptions</option>
+                        <option value="all">All Data (Full Import)</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center">
+                    <input type="checkbox" id="import-overwrite" class="mr-2">
+                    <label for="import-overwrite" class="text-sm text-gray-700">Overwrite existing data</label>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" id="cancel-import" class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-100">Cancel</button>
+                    <button type="button" id="confirm-import" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
