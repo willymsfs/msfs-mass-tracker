@@ -1,154 +1,45 @@
-/* Base styles */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* Basic styling for layout and readability */
+body { font-family: sans-serif; background-color: #f4f4f9; margin: 0; }
+.app-container { max-width: 1200px; margin: auto; padding: 20px; }
+header, footer { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.controls { display: flex; gap: 15px; align-items: center; margin-top: 10px; }
+#calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
 }
-
-.view-content {
-    min-height: 600px;
-}
-
-/* Calendar styles */
-.calendar {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.calendar th {
-    background-color: #f3f4f6;
+.day {
+    min-height: 120px;
+    border: 1px solid #ddd;
+    background: #fff;
     padding: 8px;
-    text-align: center;
-    font-weight: 500;
-    color: #374151;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
+.day:hover { background-color: #eef; }
+.day .day-number { font-weight: bold; font-size: 16px; }
+.day .intention { font-size: 12px; color: #333; margin-top: 5px; }
+.day .serial { font-size: 11px; color: #888; }
 
-.calendar td {
-    padding: 8px;
-    height: 80px;
-    vertical-align: top;
-    border: 1px solid #e5e7eb;
-    position: relative;
-}
+/* Day Types Styling */
+.day.province-intention { background-color: #e6f7ff; }
+.day.personal-intention { background-color: #fffbe6; }
+.day.deceased-suffrage { background-color: #f6f6f6; border-left: 3px solid #555; }
+.day.missed { background-color: #fff1f0; border-left: 3px solid #d93026; }
+.day.no-mass { background-color: #fafafa; color: #aaa; }
 
-.calendar-day {
-    font-weight: 500;
-    margin-bottom: 4px;
-}
-
-.calendar-day.today {
-    background-color: #3b82f6;
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: inline-flex;
+/* Modal Styling */
+.modal-hidden { display: none; }
+#edit-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
     align-items: center;
     justify-content: center;
 }
-
-.calendar-event {
-    font-size: 0.75rem;
-    padding: 2px 4px;
-    margin: 2px 0;
-    border-radius: 4px;
-    background-color: #e0f2fe;
-    color: #0369a1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.calendar-event.personal {
-    background-color: #ede9fe;
-    color: #5b21b6;
-}
-
-.calendar-event.suffrage {
-    background-color: #f0fdf4;
-    color: #166534;
-}
-
-.calendar-event.good-friday {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
-
-/* Modal animations */
-.modal-enter {
-    animation: modal-enter 0.3s ease-out;
-}
-
-@keyframes modal-enter {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Tooltip styles */
-.tooltip {
-    position: relative;
-    display: inline-block;
-}
-
-.tooltip .tooltip-text {
-    visibility: hidden;
-    width: 200px;
-    background-color: #1f2937;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 8px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 0.875rem;
-}
-
-.tooltip:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* Status badges */
-.status-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.status-badge.completed {
-    background-color: #dcfce7;
-    color: #166534;
-}
-
-.status-badge.pending {
-    background-color: #fef3c7;
-    color: #92400e;
-}
-
-.status-badge.missed {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .calendar td {
-        height: 60px;
-        font-size: 0.875rem;
-    }
-    
-    .calendar-event {
-        font-size: 0.625rem;
-    }
-}
+.modal-content { background: #fff; padding: 30px; border-radius: 8px; width: 400px; }
+#edit-form label { display: block; margin-top: 15px; }
+#edit-form input, #edit-form select { width: 100%; padding: 8px; margin-top: 5px; }
+.modal-buttons { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
